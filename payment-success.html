@@ -23,13 +23,13 @@
     <div class="small muted">
       If nothing happens, <a id="manualLink" href="#" target="_blank" rel="noopener">tap here</a> to continue.
             </div>
-    </div>
+        </div>
 
     <script>
     (function () {
       /** CONFIG - VeggieConnect App Configuration **/
       const APP_CUSTOM_SCHEME_BASE = "veggieconnect://order-success";   // custom URL scheme
-      const APP_WEB_FALLBACK = "https://amanciolicious.github.io/veggieconnect.github.io/order-success"; // web fallback
+      const APP_WEB_FALLBACK = "https://amanciolicious.github.io/veggieconnect.github.io/"; // web fallback to main page
       const PLAY_STORE_URL = "https://play.google.com/store/apps/details?id=com.veggieconnect.app";
       const APP_STORE_URL = "https://apps.apple.com/app/veggieconnect/id123456789";
       const ANDROID_PACKAGE = "com.veggieconnect.app"; // Android package name
@@ -51,8 +51,8 @@
           const scheme = url.protocol.replace(":", "");
           const hostAndPath = url.host + url.pathname;
           const fallbackEncoded = encodeURIComponent(universalWebUrl);
-          // Use the proper intent format that triggers app chooser
-          return `intent://order-success${url.search}#Intent;scheme=veggieconnect;package=${ANDROID_PACKAGE};S.browser_fallback_url=${fallbackEncoded};end`;
+          // Use intent format without package to force app chooser
+          return `intent://order-success${url.search}#Intent;scheme=veggieconnect;S.browser_fallback_url=${fallbackEncoded};end`;
         } catch (e) {
           return customSchemeUrl;
         }
@@ -66,8 +66,8 @@
       // Elements
       const manualLink = document.getElementById("manualLink");
 
-      // Update manual link to web fallback
-      manualLink.href = universalWebUrl;
+      // Update manual link to main page
+      manualLink.href = "https://amanciolicious.github.io/veggieconnect.github.io/";
 
       // Auto-redirect immediately on page load
       openApp();
@@ -100,15 +100,10 @@
             try {
               window.location.href = customSchemeUrl;
             } catch (e) {
-              console.log('Custom scheme failed, falling back to web');
-              window.location.href = universalWebUrl;
+              console.log('Custom scheme failed, staying on page');
+              // Don't redirect to web, stay on payment success page
             }
           }, 500);
-
-          // Method 3: Final fallback to web
-          setTimeout(() => {
-            window.location.href = universalWebUrl;
-          }, 2000);
 
           return;
         }
@@ -121,19 +116,20 @@
           iframe.src = customSchemeUrl;
           document.body.appendChild(iframe);
 
-          setTimeout(() => {
+            setTimeout(() => {
             document.body.removeChild(iframe);
             const elapsed = Date.now() - start;
             if (elapsed < 1600) {
-              window.location.href = APP_STORE_URL || universalWebUrl;
+              // Don't redirect to App Store, stay on page
+              console.log('App not opened, staying on payment success page');
             }
           }, 1200);
 
           return;
         }
 
-        // Desktop / unknown: go to web success page
-        window.location.href = universalWebUrl;
+        // Desktop / unknown: stay on payment success page
+        console.log('Desktop/unknown platform, staying on payment success page');
       }
     })();
     </script>
