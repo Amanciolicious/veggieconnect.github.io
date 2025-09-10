@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Payment Successful — Redirecting...</title>
-  <style>
+    <style>
     :root{--green:#6CA04A;--bg:#F8FAF5}
     body{margin:0;font-family:Inter, system-ui, -apple-system, sans-serif;background:var(--bg);display:flex;align-items:center;justify-content:center;height:100vh}
     .card{background:#fff;border-radius:12px;box-shadow:0 6px 20px rgba(0,0,0,0.08);padding:34px 28px;max-width:460px;width:92%;text-align:center;border:3px solid rgba(108,160,74,0.06)}
@@ -13,22 +13,19 @@
     .btn{display:inline-block;background:var(--green);color:#fff;padding:10px 20px;border-radius:8px;text-decoration:none;font-weight:600}
     .small{margin-top:12px;font-size:13px;color:#666}
     .muted{color:#999;font-size:13px;margin-top:10px}
-  </style>
+    </style>
 </head>
 <body>
   <div class="card">
-    <h2>Payment Successful 🎉</h2>
-    <p>Your transaction has been completed successfully. Tap Continue to open the app and complete the order flow.</p>
-
-    <!-- Continue button - it will be updated by JS with the correct deep link -->
-    <a id="continueBtn" class="btn" href="#">Continue</a>
+    <h2>Redirecting to App...</h2>
+    <p>Opening VeggieConnect to complete your order.</p>
 
     <div class="small muted">
-      If nothing happens, <a id="manualLink" href="#" target="_blank" rel="noopener">tap here</a> or open the app manually.
+      If nothing happens, <a id="manualLink" href="#" target="_blank" rel="noopener">tap here</a> to continue.
+            </div>
     </div>
-  </div>
 
-  <script>
+    <script>
     (function () {
       /** CONFIG - VeggieConnect App Configuration **/
       const APP_CUSTOM_SCHEME_BASE = "veggieconnect://order-success";   // custom URL scheme
@@ -66,20 +63,13 @@
       const isIOS = /iPhone|iPad|iPod/i.test(ua);
 
       // Elements
-      const continueBtn = document.getElementById("continueBtn");
       const manualLink = document.getElementById("manualLink");
 
       // Update manual link to web fallback
       manualLink.href = universalWebUrl;
 
-      // When user clicks Continue, attempt to open native app
-      continueBtn.addEventListener("click", function (ev) {
-        ev.preventDefault();
-        openApp();
-      }, {passive: false});
-
-      // Try to open on page load automatically after a short delay
-      setTimeout(openApp, 500);
+      // Auto-redirect immediately on page load
+      openApp();
 
       function openApp () {
         // If Android: use intent URL (provides app chooser and fallback)
@@ -106,7 +96,7 @@
           document.body.appendChild(iframe);
 
           // If the app did not open within ~1500ms, redirect to App Store or web
-          setTimeout(() => {
+            setTimeout(() => {
             document.body.removeChild(iframe);
             const elapsed = Date.now() - start;
             if (elapsed < 1600) {
@@ -121,10 +111,7 @@
         // Desktop / unknown: just go to the web success page
         window.location.href = universalWebUrl;
       }
-
-      // Also set the continue button URL (so if JS disabled, it still links to web fallback)
-      continueBtn.href = universalWebUrl;
     })();
-  </script>
+    </script>
 </body>
 </html>
