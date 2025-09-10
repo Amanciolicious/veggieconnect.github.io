@@ -175,49 +175,6 @@
             color: #333;
         }
 
-        .download-section {
-            background: #e3f2fd;
-            border: 1px solid #2196f3;
-            border-radius: 12px;
-            padding: 20px;
-            margin-top: 20px;
-        }
-
-        .download-title {
-            font-size: 16px;
-            font-weight: 600;
-            color: #1976d2;
-            margin-bottom: 10px;
-        }
-
-        .download-text {
-            font-size: 14px;
-            color: #1976d2;
-            margin-bottom: 15px;
-        }
-
-        .download-buttons {
-            display: flex;
-            gap: 10px;
-            justify-content: center;
-        }
-
-        .download-btn {
-            background: #1976d2;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 8px;
-            font-size: 14px;
-            font-weight: 500;
-            cursor: pointer;
-            text-decoration: none;
-            display: inline-block;
-        }
-
-        .download-btn:hover {
-            background: #1565c0;
-        }
 
         @media (max-width: 480px) {
             .container {
@@ -236,10 +193,6 @@
             .app-option {
                 width: 100%;
                 max-width: 200px;
-            }
-
-            .download-buttons {
-                flex-direction: column;
             }
         }
     </style>
@@ -276,18 +229,6 @@
             <p style="margin-top: 15px; color: #999; font-size: 12px;">Tap "Open VeggieConnect App" to complete your order and view your digital receipt</p>
         </div>
 
-        <div class="download-section">
-            <div class="download-title">📱 Don't have the app yet?</div>
-            <div class="download-text">Download VeggieConnect to complete your order and view your digital receipt</div>
-            <div class="download-buttons">
-                <a href="https://play.google.com/store/apps/details?id=com.veggieconnect.app" class="download-btn" target="_blank">
-                    📱 Download for Android
-                </a>
-                <a href="https://apps.apple.com/app/veggieconnect/id123456789" class="download-btn" target="_blank">
-                    🍎 Download for iOS
-                </a>
-            </div>
-        </div>
     </div>
 
     <script>
@@ -352,6 +293,11 @@
             if (status === 'success') {
                 // Show success message
                 console.log('Order successful:', orderId);
+                
+                // Auto-trigger app chooser after a short delay
+                setTimeout(() => {
+                    openInApp();
+                }, 3000);
             } else {
                 // Show error message for failed payments
                 document.querySelector('.title').textContent = 'Payment Failed';
