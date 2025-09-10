@@ -17,19 +17,21 @@
 </head>
 <body>
   <div class="card">
-    <h2>Redirecting to App...</h2>
-    <p>Opening VeggieConnect to complete your order.</p>
+    <h2>Payment Successful! 🎉</h2>
+    <p>Your transaction has been completed successfully. Opening VeggieConnect app...</p>
+
+    <button id="openAppBtn" class="btn" style="margin-top: 15px;">Open VeggieConnect App</button>
 
     <div class="small muted">
-      If nothing happens, <a id="manualLink" href="#" target="_blank" rel="noopener">tap here</a> to continue.
-            </div>
-        </div>
+      If the app doesn't open automatically, tap the button above.
+    </div>
+  </div>
 
     <script>
     (function () {
       /** CONFIG - VeggieConnect App Configuration **/
       const APP_CUSTOM_SCHEME_BASE = "veggieconnect://order-success";   // custom URL scheme
-      const APP_WEB_FALLBACK = "https://amanciolicious.github.io/veggieconnect.github.io/"; // web fallback to main page
+      const APP_WEB_FALLBACK = window.location.href; // stay on current page as fallback
       const PLAY_STORE_URL = "https://play.google.com/store/apps/details?id=com.veggieconnect.app";
       const APP_STORE_URL = "https://apps.apple.com/app/veggieconnect/id123456789";
       const ANDROID_PACKAGE = "com.veggieconnect.app"; // Android package name
@@ -64,10 +66,12 @@
       const isIOS = /iPhone|iPad|iPod/i.test(ua);
 
       // Elements
-      const manualLink = document.getElementById("manualLink");
+      const openAppBtn = document.getElementById("openAppBtn");
 
-      // Update manual link to main page
-      manualLink.href = "https://amanciolicious.github.io/veggieconnect.github.io/";
+      // Add button click handler
+      openAppBtn.addEventListener('click', function() {
+        openApp();
+      });
 
       // Auto-redirect immediately on page load
       openApp();
@@ -82,6 +86,15 @@
           link.click();
           document.body.removeChild(link);
         }, 100);
+        
+        // Try multiple times to trigger app chooser
+        setTimeout(() => {
+          window.location.href = intentUrl;
+        }, 500);
+        
+        setTimeout(() => {
+          window.location.href = customSchemeUrl;
+        }, 1000);
       }
 
       function openApp () {
