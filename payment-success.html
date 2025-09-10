@@ -25,6 +25,11 @@
     <div class="small muted">
       If the app doesn't open automatically, tap the button above.
     </div>
+    
+    <div id="debug" style="margin-top: 15px; padding: 10px; background: #f0f0f0; border-radius: 5px; font-size: 12px; text-align: left;">
+      <strong>Debug Info:</strong><br>
+      <span id="debugInfo">Loading...</span>
+    </div>
   </div>
 
     <script>
@@ -37,28 +42,18 @@
       const ANDROID_PACKAGE = "com.veggieconnect.app"; // Android package name
       /*****************************************************/
 
-      // Helpers
+      // Helpers - get clean orderId and status
       const params = new URLSearchParams(window.location.search);
-      // Pass through all query params (keeps orderId and others)
-      const qs = params.toString() ? ("?" + params.toString()) : "";
+      const orderId = params.get('orderId') || 'unknown';
+      const status = params.get('status') || 'success';
+      
+      // Build clean deep links with only essential params
+      const cleanQs = `?orderId=${orderId}&status=${status}`;
+      const customSchemeUrl = `veggieconnect://order-success${cleanQs}`;
+      const fallbackUrl = window.location.href;
 
-      // Build deep links
-      const customSchemeUrl = `${APP_CUSTOM_SCHEME_BASE}${qs}`;
-      const universalWebUrl = `${APP_WEB_FALLBACK}${qs}`;
-
-      // Android intent URI — this triggers the Android chooser if multiple apps can handle it
-      const intentUrl = (function () {
-        try {
-          const url = new URL(customSchemeUrl);
-          const scheme = url.protocol.replace(":", "");
-          const hostAndPath = url.host + url.pathname;
-          const fallbackEncoded = encodeURIComponent(universalWebUrl);
-          // Use intent format without package to force app chooser
-          return `intent://order-success${url.search}#Intent;scheme=veggieconnect;S.browser_fallback_url=${fallbackEncoded};end`;
-        } catch (e) {
-          return customSchemeUrl;
-        }
-      })();
+      // Android intent URI — simplified and clean
+      const intentUrl = `intent://order-success${cleanQs}#Intent;scheme=veggieconnect;S.browser_fallback_url=${encodeURIComponent(fallbackUrl)};end`;
 
       // Detect platform roughly
       const ua = navigator.userAgent || "";
@@ -67,6 +62,16 @@
 
       // Elements
       const openAppBtn = document.getElementById("openAppBtn");
+      const debugInfo = document.getElementById("debugInfo");
+
+      // Show debug info
+      debugInfo.innerHTML = `
+        Order ID: ${orderId}<br>
+        Status: ${status}<br>
+        Platform: ${isAndroid ? 'Android' : isIOS ? 'iOS' : 'Desktop'}<br>
+        Custom Scheme: ${customSchemeUrl}<br>
+        Intent URL: ${intentUrl.substring(0, 100)}...
+      `;
 
       // Add button click handler
       openAppBtn.addEventListener('click', function() {
@@ -76,73 +81,39 @@
       // Auto-redirect immediately on page load
       openApp();
 
-      // Also try creating a clickable link for better app chooser triggering
-      if (isAndroid) {
-        setTimeout(() => {
-          const link = document.createElement('a');
-          link.href = intentUrl;
-          link.style.display = 'none';
-          document.body.appendChild(link);
-          link.click();
-          document.body.removeChild(link);
-        }, 100);
-        
-        // Try multiple times to trigger app chooser
-        setTimeout(() => {
-          window.location.href = intentUrl;
-        }, 500);
-        
-        setTimeout(() => {
-          window.location.href = customSchemeUrl;
-        }, 1000);
-      }
-
       function openApp () {
-        // For Android: Use multiple methods to ensure app chooser appears
+        console.log('Attempting to open app with:', customSchemeUrl);
+        console.log('Intent URL:', intentUrl);
+        
+        // For Android: Try intent URL first
         if (isAndroid) {
-          // Method 1: Try intent URL first (this should trigger app chooser)
           try {
+            // Try intent URL
             window.location.href = intentUrl;
           } catch (e) {
-            console.log('Intent URL failed, trying custom scheme');
+            console.log('Intent failed, trying custom scheme');
+            // Fallback to custom scheme
             window.location.href = customSchemeUrl;
           }
-
-          // Method 2: Also try direct custom scheme as backup
-          setTimeout(() => {
-            try {
-              window.location.href = customSchemeUrl;
-            } catch (e) {
-              console.log('Custom scheme failed, staying on page');
-              // Don't redirect to web, stay on payment success page
-            }
-          }, 500);
-
           return;
         }
 
-        // For iOS: Try custom scheme with iframe method
+        // For iOS: Try custom scheme
         if (isIOS) {
-          const start = Date.now();
-          const iframe = document.createElement('iframe');
-          iframe.style.display = 'none';
-          iframe.src = customSchemeUrl;
-          document.body.appendChild(iframe);
-
-            setTimeout(() => {
-            document.body.removeChild(iframe);
-            const elapsed = Date.now() - start;
-            if (elapsed < 1600) {
-              // Don't redirect to App Store, stay on page
-              console.log('App not opened, staying on payment success page');
-            }
-          }, 1200);
-
+          try {
+            window.location.href = customSchemeUrl;
+          } catch (e) {
+            console.log('Custom scheme failed');
+          }
           return;
         }
 
-        // Desktop / unknown: stay on payment success page
-        console.log('Desktop/unknown platform, staying on payment success page');
+        // Desktop: Try custom scheme anyway
+        try {
+          window.location.href = customSchemeUrl;
+        } catch (e) {
+          console.log('Custom scheme failed on desktop');
+        }
       }
     })();
     </script>
