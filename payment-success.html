@@ -51,7 +51,8 @@
           const scheme = url.protocol.replace(":", "");
           const hostAndPath = url.host + url.pathname;
           const fallbackEncoded = encodeURIComponent(universalWebUrl);
-          return `intent://${hostAndPath}${url.search}#Intent;scheme=${scheme};package=${ANDROID_PACKAGE};S.browser_fallback_url=${fallbackEncoded};end`;
+          // Use the proper intent format that triggers app chooser
+          return `intent://order-success${url.search}#Intent;scheme=veggieconnect;package=${ANDROID_PACKAGE};S.browser_fallback_url=${fallbackEncoded};end`;
         } catch (e) {
           return customSchemeUrl;
         }
@@ -71,36 +72,59 @@
       // Auto-redirect immediately on page load
       openApp();
 
-      function openApp () {
-        // If Android: use intent URL (provides app chooser and fallback)
-        if (isAndroid) {
-          // attempt to open the intent URI
-          window.location.href = intentUrl;
+      // Also try creating a clickable link for better app chooser triggering
+      if (isAndroid) {
+        setTimeout(() => {
+          const link = document.createElement('a');
+          link.href = intentUrl;
+          link.style.display = 'none';
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+        }, 100);
+      }
 
-          // If intent fails (old browsers), set timeout fallback to web
+      function openApp () {
+        // For Android: Use multiple methods to ensure app chooser appears
+        if (isAndroid) {
+          // Method 1: Try intent URL first (this should trigger app chooser)
+          try {
+            window.location.href = intentUrl;
+          } catch (e) {
+            console.log('Intent URL failed, trying custom scheme');
+            window.location.href = customSchemeUrl;
+          }
+
+          // Method 2: Also try direct custom scheme as backup
+          setTimeout(() => {
+            try {
+              window.location.href = customSchemeUrl;
+            } catch (e) {
+              console.log('Custom scheme failed, falling back to web');
+              window.location.href = universalWebUrl;
+            }
+          }, 500);
+
+          // Method 3: Final fallback to web
           setTimeout(() => {
             window.location.href = universalWebUrl;
-          }, 1200);
+          }, 2000);
 
           return;
         }
 
-        // If iOS: try custom scheme first, then fallback to universal link (web) and App Store
+        // For iOS: Try custom scheme with iframe method
         if (isIOS) {
-          // Attempt to open the custom scheme
           const start = Date.now();
-          // Create a hidden iframe to try to open the custom scheme
           const iframe = document.createElement('iframe');
           iframe.style.display = 'none';
           iframe.src = customSchemeUrl;
           document.body.appendChild(iframe);
 
-          // If the app did not open within ~1500ms, redirect to App Store or web
-            setTimeout(() => {
+          setTimeout(() => {
             document.body.removeChild(iframe);
             const elapsed = Date.now() - start;
             if (elapsed < 1600) {
-              // App wasn't opened — fallback
               window.location.href = APP_STORE_URL || universalWebUrl;
             }
           }, 1200);
@@ -108,7 +132,7 @@
           return;
         }
 
-        // Desktop / unknown: just go to the web success page
+        // Desktop / unknown: go to web success page
         window.location.href = universalWebUrl;
       }
     })();
