@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Payment Cancelled - VeggieConnect</title>
+    <title>Order Success - VeggieConnect</title>
     <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="config.js"></script>
     <style>
@@ -34,28 +34,35 @@
             border: 1px solid rgba(141, 151, 115, 0.08);
         }
 
-        .cancel-icon {
+        .success-icon {
             width: 80px;
             height: 80px;
-            background: #ff6b35;
+            background: #6CA04A;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             margin: 0 auto 20px;
+            animation: pulse 2s infinite;
         }
 
-        .cancel-icon::before {
-            content: "✕";
+        .success-icon::before {
+            content: "✓";
             color: white;
             font-size: 40px;
             font-weight: bold;
         }
 
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
         .title {
             font-size: 28px;
             font-weight: 600;
-            color: #ff6b35;
+            color: #6CA04A;
             margin-bottom: 10px;
         }
 
@@ -67,11 +74,11 @@
         }
 
         .order-info {
-            background: #fff5f5;
+            background: #F8FAF5;
             border-radius: 12px;
             padding: 20px;
             margin-bottom: 30px;
-            border: 1px solid rgba(255, 107, 53, 0.1);
+            border: 1px solid rgba(108, 160, 74, 0.1);
         }
 
         .order-number {
@@ -83,54 +90,30 @@
 
         .order-status {
             font-size: 14px;
-            color: #ff6b35;
-            font-weight: 500;
-        }
-
-        .button-group {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-
-        .retry-btn {
-            background: #6CA04A;
-            color: white;
-            border: none;
-            padding: 15px 30px;
-            border-radius: 12px;
-            font-size: 16px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            width: 100%;
-            font-family: 'Quicksand', sans-serif;
-        }
-
-        .retry-btn:hover {
-            background: #5a8a3e;
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(108, 160, 74, 0.3);
-        }
-
-        .home-btn {
-            background: transparent;
             color: #6CA04A;
-            border: 2px solid #6CA04A;
-            padding: 15px 30px;
-            border-radius: 12px;
-            font-size: 16px;
             font-weight: 500;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            width: 100%;
-            font-family: 'Quicksand', sans-serif;
         }
 
-        .home-btn:hover {
-            background: #6CA04A;
-            color: white;
-            transform: translateY(-2px);
+        .payment-method {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #F0F8F0;
+            border-radius: 10px;
+            border: 1px solid rgba(108, 160, 74, 0.2);
+        }
+
+        .payment-icon {
+            font-size: 24px;
+        }
+
+        .payment-text {
+            font-size: 16px;
+            font-weight: 500;
+            color: #333;
         }
 
         .app-redirect {
@@ -192,6 +175,7 @@
             color: #333;
         }
 
+
         @media (max-width: 480px) {
             .container {
                 padding: 30px 20px;
@@ -215,83 +199,113 @@
 </head>
 <body>
     <div class="container">
-        <div class="cancel-icon"></div>
+        <div class="success-icon"></div>
         
-        <h1 class="title">Payment Cancelled</h1>
-        <p class="subtitle">Your payment was cancelled. No charges have been made to your account.</p>
+        <h1 class="title">Order Successful!</h1>
+        <p class="subtitle">Your payment has been processed successfully.</p>
         
         <div class="order-info">
             <div class="order-number" id="orderNumber">Order #Loading...</div>
-            <div class="order-status">Payment cancelled</div>
+            <div class="order-status">Processing your order</div>
         </div>
 
-        <div class="button-group">
-            <button class="retry-btn" onclick="retryPayment()">
-                Try Again
-            </button>
-            <button class="home-btn" onclick="goHome()">
-                Back to Home
-            </button>
+        <div class="payment-method" id="paymentMethod">
+            <div class="payment-icon">💳</div>
+            <div class="payment-text">Processing payment method...</div>
         </div>
 
         <div class="app-redirect">
-            <p style="margin-bottom: 15px; color: #666;">Or continue in:</p>
+            <p style="margin-bottom: 15px; color: #666; font-weight: 500;">Complete your order and view receipt:</p>
             <div class="app-options">
-                <div class="app-option" onclick="openInApp()">
+                <div class="app-option" onclick="openInApp()" style="border: 2px solid #6CA04A; background: #f0f8f0;">
                     <div class="app-icon veggieconnect-icon">🥬</div>
-                    <div class="app-name">VeggieConnect</div>
+                    <div class="app-name">Open VeggieConnect App</div>
                 </div>
                 <div class="app-option" onclick="openInBrowser()">
                     <div class="app-icon browser-icon">🌐</div>
                     <div class="app-name">Continue in Browser</div>
                 </div>
             </div>
+            <p style="margin-top: 15px; color: #999; font-size: 12px;">Tap "Open VeggieConnect App" to complete your order and view your digital receipt</p>
         </div>
+
     </div>
 
     <script>
         // Get URL parameters
         const urlParams = new URLSearchParams(window.location.search);
         const orderId = urlParams.get('orderId');
+        const paymentMethod = urlParams.get('paymentMethod') || 'Online Payment';
+        const status = urlParams.get('status') || 'success';
 
         // Update order number display
         if (orderId) {
             document.getElementById('orderNumber').textContent = `Order #${orderId.substring(0, 8).toUpperCase()}`;
         }
 
-        // Function to retry payment
-        function retryPayment() {
-            if (orderId) {
-                // Redirect back to payment page
-                window.location.href = `${window.VeggieConnectConfig.APP.customScheme}payment?orderId=${orderId}`;
-            } else {
-                // Fallback to home page
-                goHome();
-            }
+        // Update payment method display
+        function updatePaymentMethod(method) {
+            const paymentMethodDiv = document.getElementById('paymentMethod');
+            const icon = paymentMethodDiv.querySelector('.payment-icon');
+            const text = paymentMethodDiv.querySelector('.payment-text');
+            
+            const paymentMethods = {
+                'gcash': { icon: '💚', text: 'GCash' },
+                'grab_pay': { icon: '🚗', text: 'GrabPay' },
+                'paymaya': { icon: '💙', text: 'PayMaya' },
+                'card': { icon: '💳', text: 'Credit/Debit Card' },
+                'online_payment': { icon: '💳', text: 'Online Payment' }
+            };
+            
+            const methodInfo = paymentMethods[method.toLowerCase()] || paymentMethods['online_payment'];
+            icon.textContent = methodInfo.icon;
+            text.textContent = methodInfo.text;
         }
 
-        // Function to go home
-        function goHome() {
-            window.location.href = `${window.VeggieConnectConfig.APP.customScheme}home`;
-        }
+        // Update payment method based on URL parameter
+        updatePaymentMethod(paymentMethod);
 
         // Function to open in VeggieConnect app
         function openInApp() {
             // Try to open the app using custom URL scheme
-            const appUrl = `${window.VeggieConnectConfig.APP.customScheme}home`;
+            const appUrl = `${window.VeggieConnectConfig.APP.customScheme}order-success?orderId=${orderId}&status=success`;
+            
+            // Try to open the app
             window.location.href = appUrl;
             
             // Fallback to app store if app is not installed
             setTimeout(() => {
-                window.open(window.VeggieConnectConfig.APP.playStore, '_blank');
+                // Check if we're still on the same page (app didn't open)
+                if (document.visibilityState === 'visible') {
+                    window.open(window.VeggieConnectConfig.APP.playStore, '_blank');
+                }
             }, 2000);
         }
 
         // Function to continue in browser
         function openInBrowser() {
-            // Redirect to home page
-            window.location.href = 'https://amanciolicious.github.io/veggieconnect.github.io/';
+            // Redirect to order history or main page
+            window.location.href = `https://amanciolicious.github.io/veggieconnect.github.io/order-history?orderId=${orderId}`;
         }
+
+        // Auto-start the process when page loads
+        window.addEventListener('load', () => {
+            if (status === 'success') {
+                // Show success message
+                console.log('Order successful:', orderId);
+                
+                // Auto-trigger app chooser after a short delay
+                setTimeout(() => {
+                    openInApp();
+                }, 3000);
+            } else {
+                // Show error message for failed payments
+                document.querySelector('.title').textContent = 'Payment Failed';
+                document.querySelector('.subtitle').textContent = 'There was an issue processing your payment. Please try again.';
+                document.querySelector('.success-icon').style.background = '#ff6b35';
+                document.querySelector('.success-icon::before').content = '✕';
+            }
+        });
     </script>
 </body>
 </html>
