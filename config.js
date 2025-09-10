@@ -25,3 +25,4 @@ const CONFIG = {
 
 // Make config available globally
 window.VeggieConnectConfig = CONFIG;
+ieConnectConfig = CONFIG;
