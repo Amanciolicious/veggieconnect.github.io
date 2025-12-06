@@ -4,8 +4,9 @@
 const CONFIG = {
     // Vercel API URLs (Free alternative to Firebase Functions)
     CLOUD_FUNCTIONS: {
-        completeOrder: 'https://paymongo-7ek9z2get-amanciolicious-projects.vercel.app/api/completeOrder',
-        paymongoWebhook: 'https://paymongo-7ek9z2get-amanciolicious-projects.vercel.app/api/paymongoWebhook'
+        completeOrder: 'https://paymongo-api-fawn.vercel.app/api/completeOrder',
+        paymongoWebhook: 'https://paymongo-api-fawn.vercel.app/api/paymongoWebhook'
+Hide quoted text
     },
     
     // App URLs
@@ -25,4 +26,3 @@ const CONFIG = {
 
 // Make config available globally
 window.VeggieConnectConfig = CONFIG;
-ieConnectConfig = CONFIG;
