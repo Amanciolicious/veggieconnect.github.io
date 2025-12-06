@@ -267,19 +267,49 @@
 
         // Function to open in VeggieConnect app
         function openInApp() {
-            // Try to open the app using custom URL scheme
-            const appUrl = `${window.VeggieConnectConfig.APP.customScheme}order-success?orderId=${orderId}&status=success`;
+            if (!orderId) {
+                console.error('No orderId found, cannot redirect to app');
+                return;
+            }
             
-            // Try to open the app
-            window.location.href = appUrl;
+            // Build the deep link URL
+            const deepLinkUrl = `veggieconnect://order-success?orderId=${encodeURIComponent(orderId)}&status=success`;
+            
+            // Detect platform
+            const ua = navigator.userAgent || "";
+            const isAndroid = /Android/i.test(ua);
+            const isIOS = /iPhone|iPad|iPod/i.test(ua);
+            
+            if (isAndroid) {
+                // For Android, use intent URL for better compatibility
+                const fallbackUrl = encodeURIComponent(window.location.href);
+                const intentUrl = `intent://order-success?orderId=${encodeURIComponent(orderId)}&status=success#Intent;scheme=veggieconnect;S.browser_fallback_url=${fallbackUrl};end`;
+                
+                // Try intent URL first
+                window.location.href = intentUrl;
+                
+                // Fallback to custom scheme if intent doesn't work
+                setTimeout(() => {
+                    if (document.visibilityState === 'visible') {
+                        window.location.href = deepLinkUrl;
+                    }
+                }, 500);
+            } else {
+                // For iOS and other platforms, use custom scheme directly
+                window.location.href = deepLinkUrl;
+            }
             
             // Fallback to app store if app is not installed
             setTimeout(() => {
                 // Check if we're still on the same page (app didn't open)
                 if (document.visibilityState === 'visible') {
-                    window.open(window.VeggieConnectConfig.APP.playStore, '_blank');
+                    if (isIOS) {
+                        window.open(window.VeggieConnectConfig.APP.appStore, '_blank');
+                    } else {
+                        window.open(window.VeggieConnectConfig.APP.playStore, '_blank');
+                    }
                 }
-            }, 2000);
+            }, 2500);
         }
 
         // Function to continue in browser
@@ -288,23 +318,44 @@
             window.location.href = `https://amanciolicious.github.io/veggieconnect.github.io/order-history?orderId=${orderId}`;
         }
 
+        // Ensure config is loaded before using it
+        function ensureConfigLoaded(callback) {
+            if (window.VeggieConnectConfig) {
+                callback();
+            } else {
+                // Wait for config to load
+                let attempts = 0;
+                const maxAttempts = 10;
+                const checkInterval = setInterval(() => {
+                    attempts++;
+                    if (window.VeggieConnectConfig || attempts >= maxAttempts) {
+                        clearInterval(checkInterval);
+                        callback();
+                    }
+                }, 100);
+            }
+        }
+
         // Auto-start the process when page loads
         window.addEventListener('load', () => {
-            if (status === 'success') {
-                // Show success message
-                console.log('Order successful:', orderId);
-                
-                // Auto-trigger app chooser after a short delay
-                setTimeout(() => {
-                    openInApp();
-                }, 3000);
-            } else {
-                // Show error message for failed payments
-                document.querySelector('.title').textContent = 'Payment Failed';
-                document.querySelector('.subtitle').textContent = 'There was an issue processing your payment. Please try again.';
-                document.querySelector('.success-icon').style.background = '#ff6b35';
-                document.querySelector('.success-icon::before').content = '✕';
-            }
+            ensureConfigLoaded(() => {
+                if (status === 'success') {
+                    // Show success message
+                    console.log('Order successful:', orderId);
+                    console.log('Config loaded:', window.VeggieConnectConfig);
+                    
+                    // Auto-trigger app chooser after a short delay
+                    setTimeout(() => {
+                        openInApp();
+                    }, 2000);
+                } else {
+                    // Show error message for failed payments
+                    document.querySelector('.title').textContent = 'Payment Failed';
+                    document.querySelector('.subtitle').textContent = 'There was an issue processing your payment. Please try again.';
+                    document.querySelector('.success-icon').style.background = '#ff6b35';
+                    document.querySelector('.success-icon::before').content = '✕';
+                }
+            });
         });
     </script>
 </body>
